@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TestAlly is an AI-powered accessibility testing assistant that generates per-component manual WCAG compliance testing walkthroughs. It combines static analysis (axe-core, ESLint a11y, custom rules) with LLM-generated guidance in an If-This-Then-That (ITTT) step format. A secondary LLM pass validates output accuracy and returns a confidence score.
 
-**Status**: Pre-implementation — the repo currently contains architecture/deployment documentation in `docs/`. Source code has not been written yet.
+**Status**: Early implementation — the monorepo scaffold is in place (`client/` Vite + React placeholder, `server/` Express with `GET /api/health`). The analysis pipeline, LLM layers, and WCAG tooling described in `docs/` are not built yet.
 
 ## Planned Tech Stack
 

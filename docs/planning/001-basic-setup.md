@@ -363,6 +363,8 @@ eslint.config.js
 .prettierrc
 .gitignore
 .env.example
+vitest.config.ts
+vitest.e2e.config.ts
 client/
   package.json
   tsconfig.json
@@ -370,12 +372,22 @@ client/
   vite.config.ts
   src/
     main.tsx
+    vite-env.d.ts
 server/
   package.json
   tsconfig.json
   src/
     index.ts
 ```
+
+### Implementation notes (keep `npx tsc --build` and ESLint working)
+
+1. **Root `package.json`:** add `"type": "module"` so `eslint.config.js` can use `import` (ESM). Without it, Node treats `.js` as CommonJS and ESLint may fail to load.
+2. **`client/tsconfig.json`:** add `"lib": ["ES2022", "DOM", "DOM.Iterable"]` under `compilerOptions`. The snippet above omits `lib`; without it, TypeScript may not resolve DOM types for `main.tsx`, and `tsc -b` can fail.
+3. **`client/src/vite-env.d.ts`:** add `/// <reference types="vite/client" />` so editor/tsc understand Vite’s module env (optional but recommended).
+4. **`vitest.config.ts` / `vitest.e2e.config.ts`:** the root `test` / `test:e2e` scripts expect these files (use `passWithNoTests: true` until tests exist).
+
+If the dev tab never finishes loading, try opening **`http://127.0.0.1:5173/`** (or the port Vite prints), use a normal desktop browser, and ensure nothing else is bound to the same port.
 
 ## Next Step
 
