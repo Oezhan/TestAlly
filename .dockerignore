@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.git/
+.idea/
+.env
+.env.production
+.env.local
+*.tsbuildinfo
+coverage/
+docs/
+tests/
+*.md
+!package.json
