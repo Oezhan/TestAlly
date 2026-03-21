@@ -1,11 +1,14 @@
 import { useState, useCallback } from 'react';
 import { submitAnalysis, pollJobStatus, getManualTestResults } from '../api';
 import type { AnalyzeRequest, JobStatus, ManualTestResponse } from '../types/api';
-import styles from './Home.module.css';
+import styles from './ClassicWorkspace.module.css';
 
 type AppState = 'idle' | 'submitting' | 'analyzing' | 'complete' | 'error';
 
-export function Home() {
+/**
+ * Multi-field component form (language, code, optional description/css/js) — matches the pre–single-field shell.
+ */
+export function ClassicWorkspace() {
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState<AnalyzeRequest['language']>('html');
   const [description, setDescription] = useState('');
@@ -17,47 +20,52 @@ export function Home() {
   const [results, setResults] = useState<ManualTestResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!code.trim()) return;
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault();
+      if (!code.trim()) return;
 
-    setAppState('submitting');
-    setError(null);
-    setResults(null);
+      setAppState('submitting');
+      setError(null);
+      setResults(null);
 
-    try {
-      const response = await submitAnalysis({
-        code,
-        language,
-        description: description || undefined,
-        css: css || undefined,
-        js: js || undefined,
-      });
+      try {
+        const response = await submitAnalysis({
+          code,
+          language,
+          description: description || undefined,
+          css: css || undefined,
+          js: js || undefined,
+        });
 
-      setAppState('analyzing');
+        setAppState('analyzing');
 
-      await pollJobStatus(response.jobId, (status) => {
-        setProgress(status);
-      });
+        await pollJobStatus(response.jobId, (status) => {
+          setProgress(status);
+        });
 
-      const testResults = await getManualTestResults(response.jobId);
-      setResults(testResults);
-      setAppState('complete');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      setAppState('error');
-    }
-  }, [code, language, description, css, js]);
+        const testResults = await getManualTestResults(response.jobId);
+        setResults(testResults);
+        setAppState('complete');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+        setAppState('error');
+      }
+    },
+    [code, language, description, css, js],
+  );
 
   return (
     <div className={styles.container}>
-      <form className={styles.inputPanel} onSubmit={handleSubmit}>
+      <form className={styles.inputPanel} onSubmit={(e) => void handleSubmit(e)}>
         <h2 className={styles.panelTitle}>Component Input</h2>
 
         <div className={styles.field}>
-          <label htmlFor="language" className={styles.label}>Language</label>
+          <label htmlFor="classic-language" className={styles.label}>
+            Language
+          </label>
           <select
-            id="language"
+            id="classic-language"
             value={language}
             onChange={(e) => setLanguage(e.target.value as AnalyzeRequest['language'])}
             className={styles.select}
@@ -71,23 +79,26 @@ export function Home() {
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="code" className={styles.label}>
+          <label htmlFor="classic-code" className={styles.label}>
             Component Code <span className={styles.required}>*</span>
           </label>
           <textarea
-            id="code"
+            id="classic-code"
             value={code}
             onChange={(e) => setCode(e.target.value)}
             className={styles.codeInput}
             placeholder="Paste your component HTML/JSX here..."
             rows={12}
+            spellCheck={false}
           />
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="description" className={styles.label}>Description (optional)</label>
+          <label htmlFor="classic-description" className={styles.label}>
+            Description (optional)
+          </label>
           <input
-            id="description"
+            id="classic-description"
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -97,26 +108,32 @@ export function Home() {
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="css" className={styles.label}>CSS (optional)</label>
+          <label htmlFor="classic-css" className={styles.label}>
+            CSS (optional)
+          </label>
           <textarea
-            id="css"
+            id="classic-css"
             value={css}
             onChange={(e) => setCss(e.target.value)}
             className={styles.codeInput}
             placeholder="Associated CSS styles..."
             rows={4}
+            spellCheck={false}
           />
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="js" className={styles.label}>JavaScript (optional)</label>
+          <label htmlFor="classic-js" className={styles.label}>
+            JavaScript (optional)
+          </label>
           <textarea
-            id="js"
+            id="classic-js"
             value={js}
             onChange={(e) => setJs(e.target.value)}
             className={styles.codeInput}
             placeholder="Associated JavaScript..."
             rows={4}
+            spellCheck={false}
           />
         </div>
 
@@ -137,12 +154,10 @@ export function Home() {
         <h2 className={styles.panelTitle}>Results</h2>
 
         {appState === 'idle' && (
-          <p className={styles.placeholder}>
-            Submit a component to see accessibility testing results.
-          </p>
+          <p className={styles.placeholder}>Submit a component to see accessibility testing results.</p>
         )}
 
-        {appState === 'analyzing' && progress && (
+        {appState === 'analyzing' && progress != null && (
           <div className={styles.progress}>
             <div className={styles.progressPhase}>{progress.phase}</div>
             <p>{progress.description}</p>
@@ -163,12 +178,9 @@ export function Home() {
           </div>
         )}
 
-        {appState === 'complete' && results?.status === 'success' && results.analysis && (
+        {appState === 'complete' && results?.status === 'success' && results.analysis != null && (
           <div className={styles.results}>
-            {/* Results display — implemented in 022-results-panel.md */}
-            <pre className={styles.jsonOutput}>
-              {JSON.stringify(results.analysis, null, 2)}
-            </pre>
+            <pre className={styles.jsonOutput}>{JSON.stringify(results.analysis, null, 2)}</pre>
           </div>
         )}
       </div>
