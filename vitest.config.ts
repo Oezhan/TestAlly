@@ -6,8 +6,23 @@ export default defineConfig({
   test: {
     passWithNoTests: true,
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-    include: ['client/src/**/*.test.{ts,tsx}', 'server/src/**/*.test.ts'],
+    projects: [
+      {
+        plugins: [react()],
+        test: {
+          name: 'client',
+          environment: 'jsdom',
+          include: ['client/src/**/*.test.{ts,tsx}'],
+          setupFiles: ['client/src/test-setup.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'server',
+          environment: 'node',
+          include: ['server/src/**/*.test.ts'],
+        },
+      },
+    ],
   },
 });
